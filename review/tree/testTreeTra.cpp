@@ -1,6 +1,8 @@
 #include "Tree_basic.h"
 #include <gtest/gtest.h>
+#ifdef __APPLE__
 #include <malloc/_malloc.h>
+#endif
 #include <vector>
 
 //              1

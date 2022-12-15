@@ -3,7 +3,9 @@
 
 #include <cstddef>
 #include <iostream>
+#ifdef __APPLE__
 #include <malloc/_malloc.h>
+#endif
 #include <queue>
 #include <stack>
 #include <vector>
