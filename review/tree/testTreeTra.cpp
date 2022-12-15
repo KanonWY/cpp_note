@@ -76,3 +76,11 @@ TEST(Treeeinvert, example__5) {
 
     freeTree(p);
 }
+
+TEST(Test_averageOfLevels, averageOfLevels) {
+    TreeNode *p = GetTree({1, 2, 3, 4, 5, 6, 7});
+    std::vector<double> res = {1, 2.5, 5.5};
+    EXPECT_EQ(averageOfLevels(p), res);
+
+    freeTree(p);
+}

@@ -111,6 +111,7 @@ std::vector<std::vector<int>> levelOrder(TreeNode *root) {
     return res;
 }
 
+//层次遍历，返回一维数组
 std::vector<int> levelOderToV1(TreeNode *root) {
     std::vector<int> res;
     if (!root) {
@@ -128,6 +129,36 @@ std::vector<int> levelOderToV1(TreeNode *root) {
         if (tmpNode->right) {
             m_queue.push(tmpNode->right);
         }
+    }
+    return res;
+}
+
+#include <numeric>
+
+// 计算每一层的平均值
+std::vector<double> averageOfLevels(TreeNode *root) {
+    std::vector<double> res;
+    if (!root) {
+        return res;
+    }
+    std::queue<TreeNode *> m_queue;
+    m_queue.push(root);
+    while (!m_queue.empty()) {
+        std::vector<int> tmp(m_queue.size(), 0);
+        for (int i = 0; i < tmp.size(); ++i) {
+            auto node = m_queue.front();
+            m_queue.pop();
+            tmp[i] = node->val;
+            if (node->left) {
+                m_queue.push(node->left);
+            }
+            if (node->right) {
+                m_queue.push(node->right);
+            }
+        }
+        double sum = std::accumulate(std::begin(tmp), std::end(tmp), 0.0);
+        double mean = sum / tmp.size();
+        res.push_back(mean);
     }
     return res;
 }
