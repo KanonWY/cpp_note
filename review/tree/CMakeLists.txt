@@ -1,8 +1,6 @@
 enable_testing()
-add_executable(
-    travel_test
-    testTreetra.cpp travel.cpp
-)
+add_executable(travel_test
+    testTreeTra.cpp travel.cpp)
 
 target_link_libraries(
     travel_test
