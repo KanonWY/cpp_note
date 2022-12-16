@@ -1,3 +1,4 @@
+#include "BitBasic.h"
 #include <iostream>
 #include <vector>
 
