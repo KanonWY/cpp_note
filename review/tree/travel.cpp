@@ -111,7 +111,7 @@ std::vector<std::vector<int>> levelOrder(TreeNode *root) {
     return res;
 }
 
-//层次遍历，返回一维数组
+// 层次遍历，返回一维数组
 std::vector<int> levelOderToV1(TreeNode *root) {
     std::vector<int> res;
     if (!root) {
