@@ -1,12 +1,12 @@
 #include "LinkListbasic.h"
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <map>
 #include <set>
+#ifdef __APPLE__
 #include <sys/syslimits.h>
-#include <unordered_map>
+#endif
 #include <unordered_set>
 #include <utility>
 
@@ -216,84 +216,102 @@ ListNode *detectCycle(ListNode *head) {
     return nullptr;
 }
 
-// LRU缓存
-// 实现 LRUCache 类：
-// LRUCache(int capacity) 以 正整数 作为容量 capacity 初始化 LRU 缓存
-// int get(int key) 如果关键字 key 存在于缓存中，则返回关键字的值，否则返回 -1
-// 。 void put(int key, int value) 如果关键字 key 已经存在，则变更其数据值 value
-// ；如果不存在，则向缓存中插入该组 key-value
-// 。如果插入操作导致关键字数量超过 capacity ，则应该 逐出 最久未使用的关键字。
+/**
+ *  给你链表的头结点 head ，请将其按 升序 排列并返回 排序后的链表 。
+ *
+ *
+ */
 
-class LRUCache {
-  public:
-    struct LinkNode {
-        int value;
-        LinkNode *pre, *next;
-        LinkNode() : value(0), pre(nullptr), next(nullptr) {}
-        LinkNode(int x) : value(x), pre(nullptr), next(nullptr) {}
-    };
-    LRUCache(int capacity) {
-        m_capacity = capacity;
-        m_len = 0;
+ListNode *sortList(ListNode *head) {
+    if (!head) {
+        return nullptr;
     }
-
-    //    head <-> 1 <-> 2 <-> 3 <-> key <-> 4 <-> tail
-    //  head <-> key <-> 1 <-> 2 <-> 3 <->
-    int get(int key) {
-        if (inner_map.count(key)) {
-            LinkNode *node = inner_map[key];
-            // 更新信息
-            updateNodeToHead(node);
-            return node->value;
-
-        } else {
-            return -1;
+    int length = LengthOfList(head);
+    ListNode *dummyHead = new ListNode(0);
+    dummyHead->next = head;
+    for (int subLength = 1; subLength < length; subLength <<= 1) {
+        ListNode *pre = dummyHead, *curr = dummyHead->next;
+        while (curr) {
+            ListNode *head1 = curr;
+            for (int i = 1; i < subLength && curr->next != nullptr; i++) {
+                curr = curr->next;
+            }
+            ListNode *head2 = curr->next;
+            curr->next = nullptr;
+            curr = head2;
+            for (int i = 0;
+                 i < subLength && curr != nullptr && curr->next != nullptr;
+                 i++) {
+                curr = curr->next;
+            }
+            ListNode *next = nullptr;
+            if (curr != nullptr) {
+                next = curr->next;
+                curr->next = nullptr;
+            }
+            ListNode *merged = mergeTwoLists(head1, head2);
+            pre->next = merged;
+            while (pre->next != nullptr) {
+                pre = pre->next;
+            }
+            curr = next;
         }
     }
+    return dummyHead->next;
+}
 
-    void put(int key, int value) {
-        if (inner_map.count(key)) { // 存在
-            LinkNode *node = inner_map[key];
-            if (node->value != value) {
-                node->value = value;
-            }
-            updateNodeToHead(node);
-        } else { // 不存在
-            // 插入
-            if (m_len >= m_capacity) {
-                // 删除一个
-
-            } else {
-            }
+ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+    int length_1 = LengthOfList(headA);
+    int length_2 = LengthOfList(headB);
+    if (length_1 > length_2) {
+        int delta = length_1 - length_2;
+        while (delta-- && headA != nullptr) {
+            headA = headA->next;
+        }
+    } else {
+        int delta = length_2 - length_1;
+        while (delta-- && headB != nullptr) {
+            headB = headB->next;
         }
     }
-
-  private:
-    void updateNodeToHead(LinkNode *key) {
-
-        // 断
-        key->next->pre = key->pre;
-        key->pre->next = key->next;
-
-        // 接
-        key->next = head.next;
-        key->pre = &head;
-        head.next = key;
-        key->next->pre = key;
+    while (headA && headB) {
+        if (headA == headB) {
+            return headA;
+        }
+        headA = headA->next;
+        headB = headB->next;
     }
+    return nullptr;
+}
 
-    //   -----    n <-> m <->oldest <-> tail
-    void delOldest() {
-        assert(tail.pre != &head);
-        LinkNode *oldest = tail.pre;
-        oldest->pre->next = &tail;
-        tail.pre = oldest->pre;
-        inner_map.erase(oldest->value);
-        delete oldest;
+/**
+ *     @brief 给你单链表的头节点 head ，请你反转链表，并返回反转后的链表。
+ *
+ *     head: 输入的链表头
+ */
+ListNode *reverseList(ListNode *head) {
+    if (!head) {
+        return nullptr;
     }
-    LinkNode head;
-    LinkNode tail;
-    int m_capacity = 0;
-    int m_len = 0;
-    std::unordered_map<int, LinkNode *> inner_map; // 确保O(1)的找
-};
+    ListNode *pre = nullptr;
+    while (head) {
+        ListNode *temp = head->next;
+        head->next = pre;
+        pre = head;
+        head = temp;
+    }
+    return pre;
+}
+
+/**
+ *  @brief 给你一个单链表的头节点
+ *  head,请你判断该链表是否为回文链表。如果是，返回 true
+ * ；否则，返回 false
+ *
+ *
+ *  //1.栈处理
+ *  //2.反转链表
+ *
+ */
+
+bool isPalindrome(ListNode *head) { return false; }
