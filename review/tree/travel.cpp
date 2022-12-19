@@ -1,8 +1,12 @@
 #include "Tree_basic.h"
+#include <__tree>
 #include <algorithm>
+#include <climits>
+#include <cmath>
 #include <cstddef>
 #include <cstdlib>
 #include <queue>
+#include <stack>
 #include <vector>
 
 // 非递归前序遍历
@@ -53,9 +57,7 @@ std::vector<int> midtravel(TreeNode *root) {
         auto top_element = m_stack.top();
         res.push_back(top_element->val);
         m_stack.pop();
-        if (top_element->right != nullptr) {
-            curr = top_element->right;
-        }
+        curr = top_element->right;
     }
     return res;
 }
@@ -365,4 +367,134 @@ int maxPathSum(TreeNode *root) {
     int maxValue = 0;
     maxPathSum_help(root, maxValue);
     return maxValue;
+}
+
+/**
+ * @brief 给你一个整数 n ，求恰由 n 个节点组成且节点值从 1 到 n 互不相同的
+ *        二叉搜索树 有多少种？ 返回满足题意的二叉搜索树的种数。
+ *
+ */
+int numTrees(int n) {
+    std::vector<int> G(n + 1, 0);
+    G[0] = 0;
+    G[1] = 1;
+    for (int i = 2; i <= n; ++i) {
+        for (int j = 1; j <= i; ++j) {
+            G[i] = G[j - 1] * G[i - j];
+        }
+    }
+    return G[n];
+}
+
+/**
+ * @brief  给你一个二叉树的根节点 root ，判断其是否是一个有效的二叉搜索树
+ *          二叉搜索树的定义：
+ *          （1）节点的左子树只包含 小于 当前节点的数。
+ *          （2）节点的右子树只包含 大于 当前节点的数。
+ *          （3）所有左子树和右子树自身必须也是二叉搜索树。
+ * @param root
+ * @return true
+ * @return false
+ */
+
+//
+//                a
+//            /      \
+//           b        e
+//         /            \
+//        c              m
+//
+//
+
+bool isValidBST(TreeNode *root) {
+    if (!root) {
+        return true;
+    }
+    std::stack<TreeNode *> m_stack;
+    TreeNode *curr = root;
+    long long preOrder = (long long)INT_MIN - 1;
+    while (!m_stack.empty() || curr != nullptr) {
+        while (curr) {
+            m_stack.push(curr->left);
+            curr = curr->left;
+        }
+        TreeNode *tmp = m_stack.top();
+        m_stack.pop();
+        if (tmp->val <= preOrder) {
+            return false;
+        }
+        preOrder = tmp->val;
+        curr = tmp->right;
+    }
+    return true;
+}
+
+/**
+ * @brief 给出二叉搜索树的根节点，
+ * 该树的节点值各不相同，请你将其转换为累加树（Greater SumTree），使每个节点
+ * node 的新值等于原树中大于或等于 node.val 的值之和。
+ *
+ * @param root
+ * @return TreeNode*
+ */
+
+TreeNode *convertBST(TreeNode *root) {
+    if (!root) {
+        return nullptr;
+    }
+    int sum = 0;
+    std::stack<TreeNode *> m_stack;
+    TreeNode *curr = root;
+    while (!m_stack.empty() || curr) {
+        while (curr) {
+            m_stack.push(curr);
+            curr = curr->right;
+        }
+        TreeNode *tmp = m_stack.top();
+        m_stack.pop();
+        tmp->val = sum + tmp->val;
+        sum = tmp->val;
+        curr = tmp->left;
+    }
+    return root;
+}
+
+int help_convertBST_2 = 0;
+TreeNode *convertBST_2(TreeNode *root) {
+    if (root != nullptr) {
+        convertBST_2(root->right);
+        help_convertBST_2 += root->val;
+        root->val = help_convertBST_2;
+        convertBST_2(root->left);
+    }
+    return root;
+}
+
+/**
+ * @brief 二叉树的最近公共祖先
+ *      对于有根树 T 的两个节点 p、q，最近公共祖先表示为一个节点 x，满足 x 是
+ *      p、q 的祖先且 x 的深度尽可能大 （一个节点也可以是它自己的祖先）
+ * @param root
+ * @param p
+ * @param q
+ * @return TreeNode*
+ */
+
+TreeNode *lowestCommonAncestor_help_node;
+bool lowestCommonAncestor_help(TreeNode *root, TreeNode *p, TreeNode *q) {
+    if (!root) {
+        return false;
+    }
+    bool inCurrentNode = (root->val == p->val || root->val == q->val);
+    bool inLeft = lowestCommonAncestor_help(root->left, p, q);
+    bool inRight = lowestCommonAncestor_help(root->right, p, q);
+    if ((inLeft && inRight) || ((inCurrentNode) && (inLeft || inRight))) {
+        lowestCommonAncestor_help_node = root;
+    }
+    return inCurrentNode || inLeft || inRight;
+}
+
+TreeNode *lowestCommonAncestor(TreeNode *root, TreeNode *p, TreeNode *q) {
+    lowestCommonAncestor_help(root, p, q);
+    return lowestCommonAncestor_help_node;
 }

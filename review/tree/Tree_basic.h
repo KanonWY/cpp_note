@@ -16,9 +16,9 @@ struct TreeNode {
     TreeNode *right;
     TreeNode() : val(0), left(nullptr), right(nullptr) {}
     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {
-        std::cout << "+" << std::endl;
+        // std::cout << "+" << std::endl;
     }
-    ~TreeNode() { std::cout << "-" << std::endl; }
+    ~TreeNode() {}
 };
 
 /////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ int maxPathSum(TreeNode *root);
 std::vector<TreeNode *> delNodes(TreeNode *root, std::vector<int> &to_delete);
 
 ///////////////////////////////////////////////////////////////////////////
-//二叉查找树
+// 二叉查找树
 template <typename T> class BST {
     struct Node {
         T data;
@@ -151,7 +151,7 @@ template <typename T> class BST {
             t->left = remove(t->left, x);
         } else if (x > t->data) {
             t->right = remove(t->right, x);
-        } else if (t->left && t->right) { //找到目标数据了
+        } else if (t->left && t->right) { // 找到目标数据了
             temp = findMin(t->right);
             t->data = temp->data;
             t->right = remove(t->right, t->data);
@@ -175,5 +175,131 @@ template <typename T> class BST {
 
     void remove(T x) { remove(root, x); }
 };
+///////////////////////////////////////////////////////////////////////////
+
+// 不同的二叉搜索树
+int numTrees(int n);
+
+// 是否是有效的二叉搜索树
+bool isValidBST(TreeNode *root);
+
+// 把二叉搜索树转换为累加树
+TreeNode *convertBST(TreeNode *root);
+
+// 二叉树的最近公共祖先
+TreeNode *lowestCommonAncestor(TreeNode *root, TreeNode *p, TreeNode *q);
+
+///////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief   二叉树的序列化与反序列化
+ *
+ */
+
+#include <regex>
+#include <string>
+
+// 求父节点的number
+//
+//                0
+//        1            2
+//     3    4      5       6
+//   7  8 9  10 11  12  13  14
+//
+//
+
+static int numbe_of_parent(int n) {
+    if (n <= 0) {
+        return -1;
+    } else {
+        return std::floor((n - 1) / 2);
+    }
+};
+
+static bool is_left_child(int parent, int son) {
+    if ((parent * 2 + 1) == son) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+using std::string;
+class Codec {
+  public:
+    // Encodes a tree to a single string.
+    static string serialize(TreeNode *root) {
+        std::string res;
+        if (!root) {
+            return res;
+        }
+        std::queue<TreeNode *> inner_queue;
+        inner_queue.push(root);
+        while (!inner_queue.empty()) {
+            TreeNode *tmp = inner_queue.front();
+            if (tmp != nullptr) {
+                PushNode(res, tmp->val);
+                if (tmp->left) {
+                    inner_queue.push(tmp->left);
+                } else {
+                    inner_queue.push(nullptr);
+                }
+                if (tmp->right) {
+                    inner_queue.push(tmp->right);
+                } else {
+                    inner_queue.push(nullptr);
+                }
+            } else {
+                PushNull(res);
+            }
+            inner_queue.pop();
+        }
+        return res.substr(1);
+    }
+    static void PushNode(std::string &input, int num) {
+        input.push_back(',');
+        input += std::to_string(num);
+    }
+    static void PushNull(std::string &input) { input + (",null"); };
+
+    // 分割字符串
+    static void string_split(const std::string &src, const std::string &split,
+                      std::vector<TreeNode *> &outParam) {
+        std::regex reg(split);
+        std::sregex_token_iterator pos(src.begin(), src.end(), reg, -1);
+        decltype(pos) end;
+        int i = 0;
+        for (; pos != end; ++pos) {
+            if (pos->str() == "null") {
+                outParam.push_back(nullptr);
+            } else {
+                int number = std::stoi(pos->str());
+                auto *tmp = new TreeNode(number);
+                outParam.push_back(tmp);
+            }
+            int parent = numbe_of_parent(i);
+            if (parent == -1) {
+            } else if (parent >= 0) {
+                if (is_left_child(parent, i)) {
+                    outParam[parent]->left = outParam.back();
+                } else {
+                    outParam[parent]->right = outParam.back();
+                }
+            }
+            i++;
+        }
+    }
+    // Decodes your encoded data to tree.
+    static TreeNode *deserialize(string data) {
+        if (data.empty()) {
+            return nullptr;
+        }
+        std::vector<TreeNode *> inner_vector;
+        string_split(data, ",", inner_vector);
+        return inner_vector[0];
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////
 
 #endif

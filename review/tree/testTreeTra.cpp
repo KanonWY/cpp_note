@@ -84,3 +84,22 @@ TEST(Test_averageOfLevels, averageOfLevels) {
 
     freeTree(p);
 }
+
+TEST(Test_averageOfLevels___, averageOfLevels___) {
+    TreeNode *p = GetTree({1, 2, 3, 4, 5, 6, 7});
+
+    freeTree(p);
+
+    Codec code;
+    std::string res = code.serialize(p);
+    std::cout << "res == " << res << std::endl;
+
+    TreeNode *p2 = code.deserialize("1,2,3,null,null,null,6");
+
+    auto res2 = midtravel(p2);
+    for (const auto &item : res2) {
+        std::cout << "item = " << item << std::endl;
+    }
+
+    freeTree(p2);
+}
