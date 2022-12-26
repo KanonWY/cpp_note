@@ -260,6 +260,24 @@ ListNode *sortList(ListNode *head) {
     return dummyHead->next;
 }
 
+// 可能存在重复的信息，因此使用multimap·
+ListNode *sortList_2(ListNode *head) {
+    if (!head) {
+        return nullptr;
+    }
+    std::multimap<int, ListNode *> inner_map;
+    while (head) {
+        inner_map.insert({head->val, head});
+        head = head->next;
+    }
+    auto m = inner_map.begin();
+    for (auto it = ++(inner_map.begin()); it != inner_map.end(); ++it) {
+        m->second->next = it->second;
+        m = it;
+    }
+    return inner_map.begin()->second;
+}
+
 ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
     int length_1 = LengthOfList(headA);
     int length_2 = LengthOfList(headB);
@@ -314,4 +332,35 @@ ListNode *reverseList(ListNode *head) {
  *
  */
 
-bool isPalindrome(ListNode *head) { return false; }
+//  1->2->3->4->5->6->7
+
+// 1 -> 2 -> 3->4->5->6
+
+ListNode *TailOfFirst(ListNode *head) {
+    ListNode *fast = head;
+    ListNode *slow = head;
+    while (fast->next && fast->next->next) {
+        fast = fast->next->next;
+        slow = slow->next;
+    }
+    return slow;
+}
+bool isPalindrome(ListNode *head) {
+    if (!head) {
+        return true;
+    }
+    ListNode *firstPartEnd = TailOfFirst(head);
+    ListNode *SecondPartStart = reverseList(firstPartEnd->next);
+    ListNode *p1 = head;
+    ListNode *p2 = SecondPartStart;
+    bool result = true;
+    while (result && p2 != nullptr) {
+        if (p1->val != p2->val) {
+            result = false;
+        }
+        p1 = p1->next;
+        p2 = p2->next;
+    }
+    firstPartEnd->next = reverseList(SecondPartStart);
+    return result;
+}

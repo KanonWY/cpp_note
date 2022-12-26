@@ -4,3 +4,6 @@ review/.vscode
 review/.cache
 review/build
 review/build/*
+review/.idea/*
+review/.idea
+review/.clang-format
