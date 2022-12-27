@@ -65,6 +65,7 @@ static int test_erase() {
 
 int test_map_insert() {
     std::map<int, int> m_map;
+    m_map.insert({1,2});
     return 0;
 }
 
