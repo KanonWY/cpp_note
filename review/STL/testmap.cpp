@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <utility>
 
 // map底层数据结构为红黑树
 // 插入删除查找的效率为log(n)
@@ -58,17 +59,77 @@ static int test_erase() {
             it++;
         }
     }
-
+    m_map.erase(4);
     std::cout << "m_map.size() = " << m_map.size() << std::endl;
+    int num = m_map.count(1);
     return 0;
 }
 
 int test_map_insert() {
     std::map<int, int> m_map;
+    auto res = m_map.insert({1, 2});
+    std::cout << res.first->first << std::endl;
+    std::cout << res.first->second << std::endl;
+    std::cout << res.second << std::endl;
+    res = m_map.insert({1, 2});
+    std::cout << res.first->first << std::endl;
+    std::cout << res.first->second << std::endl;
+    std::cout << res.second << std::endl;
     return 0;
 }
 
+void testFind() {
+    std::map<int, int> m_map;
+    m_map.insert({1, 2});
+    m_map.insert({3, 4});
+    m_map.insert({5, 6});
+    m_map.insert({7, 8});
+    m_map.insert({7, 2000});
+    auto res2 = m_map[7];
+    std::cout << res2 << std::endl;
+    for (auto it : m_map) {
+        std::cout << it.first << " " << it.second << std::endl;
+    }
+
+    auto res = m_map.find(3000000);
+    m_map.insert({99, 999});
+    if (res == m_map.end()) {
+        std::cout << "找不到" << std::endl;
+    }
+}
+
+// different
+class Widget {
+  public:
+    Widget() { std::cout << "Widget()" << std::endl; }
+    Widget(double weight) { std::cout << "Widget(double)" << std::endl; }
+    Widget &operator=(double weight) {
+        std::cout << "operator=(double)" << std::endl;
+        return *this;
+    }
+
+    Widget(const Widget &obj) { std::cout << "Widge() copy" << std::endl; }
+
+    Widget(Widget &&obj) noexcept {
+        std::cout << "Widget(Widget &&)" << std::endl;
+    }
+
+    Widget &operator=(Widget &&obj) {
+        std::cout << "operator=(move)" << std::endl;
+        return *this;
+    }
+};
+
+void testEffvice() {
+    std::map<int, Widget> m_map;
+    std::pair<int, Widget> m_a{1, 3}; // 栈上的内存？
+    // m_map.insert({1, 8});
+    std::cout << "======================================" << std::endl;
+    m_map.insert(std::move(m_a)); // error
+    std::cout << "======================================" << std::endl;
+}
+
 int main() {
-    std::cout << "main" << std::endl;
+    testEffvice();
     return 0;
 }
