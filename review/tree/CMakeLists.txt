@@ -1,1 +1,2 @@
-add_executable(tree_test travel.cpp main.cpp)
+enable_testing()
+add_executable(testBST testBST.cpp)
