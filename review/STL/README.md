@@ -1,6 +1,10 @@
 ## STL基础
 
-本文档的STL代码是基于`MaxOS13.0.SDK`。
+本文档的STL代码是基于`MaxOS13.0.SDK`。不同平台编译器的实现似乎都不太一样。
+
+- clang/llvm
+- Gnu/gcc
+- Msvc
 
 
 ### 1、vector
@@ -224,5 +228,110 @@ __tree<_Tp, _Compare, _Allocator>::__count_unique(const _Key& __k) const
 
 ### 3、unordered_map
 
+`unordered_map`的底层数据结构为哈希表（拉链实现），其查找的时间复杂度为logN。
+
+#### 3.1 基本数据结构
+
+```cpp
+template <class _Key, class _Tp, class _Hash = hash<_Key>, class _Pred = equal_to<_Key>,
+          class _Alloc = allocator<pair<const _Key, _Tp> > >
+class _LIBCPP_TEMPLATE_VIS unordered_map
+{
+public:
+    // types
+    typedef _Key                                           key_type;
+    typedef _Tp                                            mapped_type;
+    typedef __identity_t<_Hash>                            hasher;
+    typedef __identity_t<_Pred>                            key_equal;
+    typedef __identity_t<_Alloc>                           allocator_type;
+    typedef pair<const key_type, mapped_type>              value_type;
+    typedef value_type&                                    reference;
+    typedef const value_type&                              const_reference;
+  
+
+    typedef __hash_table<__value_type, __hasher,
+                         __key_equal,  __allocator_type>   __table;
+
+    __table __table_;		//底层的哈希表
+};
+```
+
+#### 3.2 查找操作
+
+`find(key_type key)`函数，查找指定的key的迭代器，返回该迭代器。如果没找到返回end()。
+
+```cpp
+iterator       find(const key_type& __k)       {return __table_.find(__k);}
+
+template <class _Tp, class _Hash, class _Equal, class _Alloc>
+template <class _Key>
+typename __hash_table<_Tp, _Hash, _Equal, _Alloc>::iterator
+__hash_table<_Tp, _Hash, _Equal, _Alloc>::find(const _Key& __k)
+{
+    size_t __hash = hash_function()(__k);  //计算出哈希值
+    size_type __bc = bucket_count();			 //获取哈希桶的数量
+    if (__bc != 0)
+    {
+        size_t __chash = __constrain_hash(__hash, __bc);			//找到桶下标
+        __next_pointer __nd = __bucket_list_[__chash];			  //找到对应的拉链
+        if (__nd != nullptr)
+        {
+            for (__nd = __nd->__next_; __nd != nullptr &&
+                (__nd->__hash() == __hash
+                  || __constrain_hash(__nd->__hash(), __bc) == __chash);
+                                                           __nd = __nd->__next_)
+            {
+                if ((__nd->__hash() == __hash)
+                    && key_eq()(__nd->__upcast()->__value_, __k))	//如果拉链中的node的key与我们find等
+#if _LIBCPP_DEBUG_LEVEL == 2
+                    return iterator(__nd, this);
+#else
+                    return iterator(__nd);		//返回该node
+#endif
+            }
+        }
+    }
+    return end();		//返货end()
+}
+```
+
+#### 3.3 插入操作
+
+
+
 ### 4、list
+
+list底层的数据结构是双端链表。头部、尾部插入的时间复杂度为O(1),查找的时间复杂为O(n)。
+
+#### 4.1 基本数据结构
+
+```cpp
+template <class _Tp, class _Alloc /*= allocator<_Tp>*/>
+class _LIBCPP_TEMPLATE_VIS list
+    : private __list_imp<_Tp, _Alloc>
+{
+    typedef __list_imp<_Tp, _Alloc> base;
+    typedef typename base::__node              __node;
+    typedef typename base::__node_allocator    __node_allocator;
+    typedef typename base::__node_pointer      __node_pointer;
+    typedef typename base::__node_alloc_traits __node_alloc_traits;
+    typedef typename base::__node_base         __node_base;
+    typedef typename base::__node_base_pointer __node_base_pointer;
+    typedef typename base::__link_pointer __link_pointer;
+    
+};
+
+template <class _Tp, class _Alloc>
+class __list_imp {
+
+};
+```
+
+
+
+#### 4.2 插入操作
+
+#### 4.2 查找操作
+
+#### 4.3 删除操作
 
