@@ -5,6 +5,6 @@
 #include <string>
 
 // 判断两个字符串包含的字符是否完全相同。
-bool isAnagram(std::string s, std::string t);
+bool isAnagram(std::string s, std::string t) { return false; }
 
 #endif
