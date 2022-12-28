@@ -1,0 +1,1 @@
+add_executable(test_traits test_traits_basic.cpp)
