@@ -80,6 +80,7 @@ void testSmartPointer() {
     int *p = new int(1000);
     check_smart_pointer(p);
     check_smart_pointer(sp_2);
+    std::unique_ptr<int> sp3(new int(2000));
 }
 
 int main() {
