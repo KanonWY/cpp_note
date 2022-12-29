@@ -6,7 +6,7 @@ struct test {
     int b = 20;
 };
 
-int main() {
+int test_kaUnique_ptr() {
     std::cout << "end" << std::endl;
     auto sp = make_kaUnique_ptr<test>();
     std::cout << "sp->a = " << sp->b << std::endl;
