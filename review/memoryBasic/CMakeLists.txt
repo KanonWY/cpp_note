@@ -6,3 +6,5 @@ add_executable(
 add_executable(testSp
     main.cpp
 )
+
+add_executable(test_myAlloc testMyAlloc.cpp)
