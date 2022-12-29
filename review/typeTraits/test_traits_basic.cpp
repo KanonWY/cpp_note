@@ -5,8 +5,8 @@
 
 // DOC https://cplusplus.com/reference/type_traits/enable_if/
 
-//限制模板函数的参数类型
-//在某些场景下，我们需要实现只有特定类型可以调用的模板函数。
+// 限制模板函数的参数类型
+// 在某些场景下，我们需要实现只有特定类型可以调用的模板函数。
 template <typename T>
 typename std::enable_if<std::is_unsigned<T>::value, std::string>::type
 DecimalToBinary(T t) {
