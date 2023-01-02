@@ -53,7 +53,7 @@
 
 ### 8、工具
 - cmake使用
-- vscode使用
+- vscode使用[clangd](https://blog.csdn.net/weixin_43862847/article/details/119274382)
 - git基础
 - docker基础
 
