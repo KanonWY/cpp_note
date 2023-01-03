@@ -101,10 +101,24 @@ int main()
 ```
 （2）虚函数相关  
 ### 2、多态与虚函数
+在C++中多态分为运行时多态与静态多态。这里主要描述运行时多态。运行时多态在C++中是通过虚函数和虚表实现的。当调用虚拟函数时，C++运行时系统确定该对象的真实类型，从而调用指定的函数。
+```cpp
+//飞鸟类
+class FlyingBird : public Bird {
+public:
+    virtual void fly(double speed, double direction) {  //虚函数
+}
 
+//秃鹰类
+class Vulture : public FlyingBird {
+public:
+    void fly(double speed, double direction) override {.
+    }
+};
+```
 
 ### 3、C++类型转换
-
+`Effective C++`条款27：**尽量少做转型动作！**
 #### 3.1 static_cast
 用来强迫隐式转换如`non-const`对象转为`const`对象，编译时检查，用于非多态的转换，可以转换指针及其他，但没有运行时类型检查来保证转换的安全性。它主要有如下几种用法：
 ```cpp
@@ -133,9 +147,18 @@ if(Base* pB = static_cast<Base*>(pD))
 {}//上行转换(派生类转换为基类）是安全的
 ```
 #### 3.2 const_cast
+`const_cast`cons_cast 有两个功能：加上const，去掉const。最主要的作用是移除常量性，其他转换均无法去除。
+```cpp
+class Object;
+const Object* cst_obj= new Object;
+//去除了const
+Object* discst_obj = const_cast < Object*> (cst_obj);
+```
 
 #### 3.3 dynamic_cast
-`dynamic_cast`主要用于类层次间的上行转换和下行转换。在类层次间进行上行转换时，`dynamic_cast`和`static_cast`的效果是一样的；在进行下行转换时，`dynamic_cast`具有类型检查的功能，比`static_cast`更安全。
+`dynamic_cast`主要用于类层次间的上行转换和下行转换。在类层次间进行上行转换时，`dynamic_cast`和`static_cast`的效果是一样的；在进行下行转换时，`dynamic_cast`具有类型检查的功能，比`static_cast`更安全。  
+注意点：  
+**父类cast到子类时，父类必须要有虚函数，否则编译器会报错；但是将子类cast到父类的时候，不需要父类有虚函数**
 ```cpp
 dynamic_cast< type* >(e)
 　type必须是一个类类型且必须是一个有效的指针
@@ -152,5 +175,20 @@ Derived *dp = dynamic_cast<Derived *>(bp);
 如果转换失败：dp为nullptr。
 如果成功：返回正确的指针。
 ```
-2、 当进行引用类型的下行转换的时候  
-#### 3.4
+2、 当进行引用类型的下行转换的时候   
+由于不存在空引用，所以只能使用异常捕获来进行处理。在引用转换失败时，会抛出`std::bad_cast`异常。
+```cpp
+#include <type_info>
+void f(const Base &b) {
+    try {
+    const Derived &d = dynamic_cast<const Base &>(b);  
+        //使用b引用的Derived对象
+    }
+    catch(std::bad_cast){
+        //处理类型转换失败的情况
+    }
+}
+``` 
+care: 尽量少使用`dynamic_cast`，耗时较高，会导致性能的下降，尽量使用其他方法替代。
+#### 3.4 reinterpret_cast
+顾名思义，重解释转换。可以将指针对象强转为int对象，也可以将int对象强转为指针对象。用于任意类型的转换，当然，和其它强制转换一样，存在安全性。其次是，`reinterpret_cast`无法去掉`const`。
