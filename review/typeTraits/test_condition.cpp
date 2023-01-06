@@ -1,22 +1,42 @@
-#include <type_traits>
-#include "basic_trailts.h"
+#include <iostream>
+#include <string>
+#include "boost/type_index.hpp"
 
-void test_condtional()
+/**
+ * @brief   简单实现condtional
+ *
+ */
+
+namespace kanon {
+
+template <bool b, typename T, typename F>
+struct conditional
 {
-    using T1 = cpp::conditional<true, int, double>::type;
-    using T2 = cpp::conditional<false, int, double>::type;
-    cpp::A<false> a;
-    a.print();
+    using type = T;
+};
 
-    cpp::A<true> b;
-    b.print();
+template <typename T, typename F>
+struct conditional<false, T, F>
+{
+    using type = F;
+};
 
-    cpp::D<false> d;
-    d.print();
+} // namespace kanon
+
+template <typename T>
+void dumpPrettyType(T t)
+{
+    std::cout << "type T = "
+              << boost::typeindex::type_id_with_cvr<decltype(t)>().pretty_name()
+              << std::endl;
 }
 
 int main()
 {
-    test_condtional();
+    kanon::conditional<true, std::string, double>::type a;
+    kanon::conditional<false, std::string, double>::type b;
+    dumpPrettyType(a);
+    dumpPrettyType(b);
+
     return 0;
 }
