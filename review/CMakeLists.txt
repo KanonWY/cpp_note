@@ -10,12 +10,14 @@ find_package(spdlog REQUIRED)
 add_subdirectory(tree)
 
 add_subdirectory(bit)
-add_subdirectory(memoryBasic)
+#add_subdirectory(memoryBasic)
 
-add_subdirectory(typeTraits)
+#add_subdirectory(typeTraits)
 
 # add_subdirectory(linklist)
 # add_subdirectory(DP)
 add_subdirectory(STL)
 
 add_subdirectory(time)
+
+add_subdirectory(move_Semantics)
