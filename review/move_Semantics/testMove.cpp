@@ -35,5 +35,7 @@ int main()
     std::cout << str1.c_str() << std::endl;
     foo(str1);
     foo(GetRandomString());
+    std::string str2("kkkkkkk");
+    foo(std::move(str2));
     return 0;
 }
