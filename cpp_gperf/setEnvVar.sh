@@ -1,0 +1,4 @@
+#! /bin/bash
+
+export TCMALLOC_SAMPLE_PARAMETER=524288
+
