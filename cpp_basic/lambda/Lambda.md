@@ -180,3 +180,150 @@ public:
 #### 2.2 广义捕获
 
 C++14标准中定义了广义捕获，广义捕获是两种捕获方式，第一种称为简单捕获（C++11中的捕获方式)；第二种为初始化捕获，初始化捕获解决了**只能捕获lambda表达式定义上下文的变量，而无法捕获表达式结果以及自定义捕获变量名**。
+```cpp
+
+//c++11,无法执行移动捕获，将str的所有权转移到lambda闭包类中
+//但是在C++14中可以进行如下操作：将str的值转移到闭包的st变量中，此后使用的str已经被闭包移动捕获了，因此再次使用有问题。
+std::string str("llpdlapdl");
+auto foo = [st = std::move(str)]()->std::string {
+	st.append("]]]]]]]");
+	return st;
+};
+foo();					//return value = llpdlapdl]]]]]]]；
+std::cout << "str size = " << str.size() << std::endl;		//str size = 0;//因为被闭包捕获了，所以为空。
+```
+### 3、lambda实现原理
+
+#### 3.1 `lambda`基本实现
+
+创建了一个简单的`lambda`表达式，捕获值a，捕获引用b，然后解析其大概实现。编译器为每一个`lambda`表达式创建了一个匿名闭包类。然后根据此类创建出了一个闭包对象。对于值捕获而言，相当于在闭包类内部有一个`值成员变量`；对于引用捕获，相当于在其内部有一个`引用类型的成员变量`。然后捕获作用域内的变量（这里是a,b）作为该类的构造函数参数，然后创建出闭包成员变量。
+
+调用`lambda`函数相当于调用`operator()`的重载函数。需要注意的是没有加`mutable`时，`operator()`的重载函数是const类型的成员函数。
+
+```cpp
+// 
+int a = 200;
+int b = 3333;
+auto foo = [a, &b]()->int{		//捕获值a，捕获引用b
+    return a + b;
+};
+foo();
+
+//简单解析
+int main()
+{
+  int a = 200;
+  int b = 3333;
+  
+  //编译器创建了一个匿名闭包类
+  class __lambda_5_12
+  {
+    public: 
+    inline int operator()() const
+    {
+      return a + b;
+    }
+    
+    private: 
+    int a;
+    int & b;
+    public: 
+    // inline /*constexpr */ __lambda_5_12(__lambda_5_12 &&) noexcept = default;
+    __lambda_5_12(int & _a, int & _b)
+    : a{_a}
+    , b{_b}
+    {}
+    
+  };
+  //使用闭包类创建了一个闭包对象。
+  __lambda_5_12 foo = __lambda_5_12(__lambda_5_12{a, b});
+  foo.operator()();
+  return 0;
+}
+
+```
+
+#### 3.2`mutable`的影响
+对于没有添加`mutable`的`lambda`表达式，本质上是一个const函数。因此捕获的对象默认无法修改的，假如捕获的是类对象，那么只能调用类对象的`const`函数。假设有`Test`类中有`echo_const()`和`echo_no_const()`。
+
+```cpp
+class Test {
+
+  public:
+    Test(const std::string str) {
+        m_str = str;
+        std::cout << "string cs" << std::endl;
+    }
+    Test(const Test& rhs) {
+        m_str = rhs.m_str;
+        std::cout << "copy" << std::endl;
+    }
+    Test& operator=(const Test& rhs) {
+        m_str = rhs.m_str;
+        std::cout << "copy =" << std::endl;
+        return *this;
+    }
+
+    Test(Test&& rhs) noexcept {
+        m_str = std::move(rhs.m_str);
+        std::cout << "move" << std::endl;
+    }
+
+    Test& operator=(Test&& rhs) noexcept {
+        m_str = std::move(rhs.m_str);
+        std::cout << "move = " << std::endl;
+        return *this;
+    }
+
+    void echo_const() const {
+        std::cout << "str = " << m_str.c_str() << std::endl;
+    }
+
+    void echo_no_const() {
+        std::cout << "str = " << m_str.c_str() << std::endl;
+    }
+
+  private:
+    std::string m_str;
+};
+```
+
+- 无`mutable`时无法修改捕获值的变量，无法调用捕获值对象的非`const`成员函数，但是可以修改捕获引用的变量，可以调用捕获引用对象的所有成员函数。
+
+```cpp
+int a = 200;
+int b = 200;
+auto fun1 = [a, &b]()->void{ 
+	a++;		//error
+	b++;		//ok,因为是引用捕获，引用不能修改，引用对应的值可以修改。
+};
+
+Test test("MMMM");
+Test test2("lkdka");
+auto fun2 = [test, &test2]()->void{
+    test.echo_const();		//yes, 可以调用const成员函数。
+    test.echo_no_const();	//no, 不能调用非const成员函数。
+    
+    test2.echo_const();		//yes
+    test2.echo_no_const();	//yes
+};
+```
+
+- 有`mutable`时，可以修改捕获值的变量，可以调用捕获值对象的任何函数。
+
+```cpp
+int a = 200;
+int b = 200;
+auto fun1 = [a, &b] mutable ()->void{ 
+	a++;		//ok, 因为加了mutable，使得可以修改捕获值对象。
+	b++;		//ok,因为是引用捕获，引用不能修改，引用对应的值可以修改。
+};
+
+Test test("MMMM");
+Test test2("lkdka");
+auto fun2 = [test, &test2] mutable ()->void{
+    test.echo_const();		//yes, 可以调用const成员函数。
+    test.echo_no_const();	//ok， 因为加了mutable，使得可以调用捕获值对象的任何函数。
+};
+```
+

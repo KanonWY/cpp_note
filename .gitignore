@@ -1,9 +1,3 @@
-review/.vscode/*
-review/.cache/*
-review/.vscode
-review/.cache
-review/build
-review/build/*
-review/.idea/*
-review/.idea
-review/.clang-format
+build
+.cache
+.vscode
