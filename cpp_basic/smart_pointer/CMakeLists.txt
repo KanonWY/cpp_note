@@ -1,1 +1,5 @@
 add_executable(shared_pointer_use share_pointer_use.cpp)
+
+add_executable(unique_pointer_use unique_pointer_use.cpp)
+
+add_executable(weak_pointer_use weak_pointer_use.cpp)
