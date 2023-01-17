@@ -1,6 +1,7 @@
+#include <functional>
 #include <memory>
 #include "SourcePool.h"
-
+#include "boost/type_index.hpp"
 
 /**
  * @brief class A和class B循环引用，然后没有释放。
@@ -98,6 +99,38 @@ void test_weak_ptr_function() {
 }
 
 
+class TestA {
+public:
+    std::string m_data;
+
+    void echo() {
+        std::cout << "data = " << m_data.c_str() << std::endl;
+    }
+};
+
+void testFoo(TestA* rhs) {
+    std::cout << "testFoo End......" << std::endl;
+}
+
+
+auto NewCallFunction = std::bind(testFoo, std::placeholders::_1);
+
 int main() {
+
+    auto foo = [](TestA* rhs) mutable -> void {
+        std::cout << "foo End......" << std::endl;
+    };
+
+    std::unique_ptr<TestA, std::function<void(TestA*)>> sp(new TestA, testFoo);
+    sp->m_data = "kokdoakd";
+    sp->echo();
+
+    auto type = boost::typeindex::type_id_with_cvr<decltype(foo)>().pretty_name();
+
+    std::cout << "name = " << type.c_str() << std::endl;
+
+    type = boost::typeindex::type_id_with_cvr<decltype(testFoo)>().pretty_name();
+    std::cout << "name = " << type.c_str() << std::endl;
+
     return 0;
 }

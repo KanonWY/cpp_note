@@ -12,6 +12,7 @@ endif()
 
 # add_subdirectory(cpp_alg)
 add_subdirectory(cpp_basic)
+add_subdirectory(cpp_boost)
 
 # add_subdirectory(cpp_design)
 # add_subdirectory(cpp_move_semantics)
