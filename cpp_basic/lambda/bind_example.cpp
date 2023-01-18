@@ -1,55 +1,31 @@
-#include <functional>
 #include <iostream>
+#include <functional>
 #include <string>
 
-double callFunc(double x, double y) { return x + y; }
+/**
+ * @brief bind函数可以绑定一个函数，然后生成一个函数对象。 std::function
+ * 绑定的对象可以是全局函数，lambda函数，或者成员函数。
+ */
 
-int bind_normal_function() {
-    auto NewCallable = std::bind(callFunc, std::placeholders::_1, 100);
-    std::cout << NewCallable(200) << std::endl;
-    return 0;
-}
 
-class Base {
-  public:
-    void display_sum(int a1, int a2) {
-        std::cout << "display_sum = " << a1 + a2 << std::endl;
+class TestFunction {
+public:
+    void echo() {
+        std::cout << "TestFunction echo ......" << std::endl;
+    }
+
+    static void echo_static() {
+        std::cout << "TestFunctuon echo_static ......" << std::endl;
     }
 };
 
-void bind_class_function() {
-    Base base;
-    auto newFunction =
-        std::bind(&Base::display_sum, &base, std::placeholders::_1, 200);
-    newFunction(2000);
-}
 
-// 需要被绑定的函数
-void TestBindFunction(std::string& str, double b) {
-    str.append(std::to_string(b));
-    std::cout << "Bind string = " << str.c_str() << std::endl;
-}
-
-// 传递引用
-void bind_ref_function() {
-    std::string str("BBBBBBBBBBBBBBBB");
-    std::cout << "str = " << str.c_str() << std::endl;
-    auto foo =
-        std::bind(TestBindFunction, std::ref(str), std::placeholders::_1);
-    foo(2999);
-    std::cout << "str = " << str.c_str() << std::endl;
-}
-
-// 传递值
-void bind_value_function() {
-    std::string str("BBBBBBBBBBBBBBBB");
-    std::cout << "str = " << str.c_str() << std::endl;
-    auto foo = std::bind(TestBindFunction, str, std::placeholders::_1);
-    foo(2999);
-    std::cout << "str = " << str.c_str() << std::endl;
-}
+/**
+ * @brief   绑定一个成员函数
+ *
+ */
 
 int main() {
-    bind_value_function();
+    std::cout << "hello world" << std::endl;
     return 0;
 }

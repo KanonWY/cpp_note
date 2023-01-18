@@ -26,4 +26,6 @@ add_executable(test_function test_function.cpp)
 
 add_executable(ka_function ka_function.cpp)
 
+add_executable(Basic_sfainase Basic_sfainae.cpp)
+
 # target_link_directories(test_declval ${Boost_LIBRARIES})

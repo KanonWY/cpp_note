@@ -1,5 +1,8 @@
+#include "SourcePool.h"
+#include <__functional/bind.h>
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <iostream>
 
@@ -13,6 +16,25 @@ public:
         std::cout << "USP echo() " << std::endl;
     }
 };
+
+
+/**
+ * @brief   struct for test unique_ptr
+ *
+ * @param x
+ * @return std::unique_ptr<int>
+ */
+
+class Unique_test {
+public:
+    void echo() const {
+        std::cout << m_str.c_str() << std::endl;
+    }
+
+private:
+    std::string m_str = "Unqiue_test";
+};
+
 
 std::unique_ptr<int> getSP(int x) {
     auto sp = std::unique_ptr<int>(new int(x));
@@ -51,55 +73,59 @@ void example_move() {
     }
 }
 
+/**
+ * @brief 测试lambda删除函数
+ *
+ */
+void test_deletor_unique_ptr_lambda() {
+    auto unique_deletor = [](Unique_test* rhs) mutable -> void {
+        std::cout << "unique_deletor" << std::endl;
+    };
+    std::unique_ptr<Unique_test, decltype(unique_deletor)> sp(new Unique_test, unique_deletor);
+}
 
-std::unique_ptr<USP> getUniquePtr() {
-    auto sp = std::make_unique<USP>();
-    return sp;
+// 测试全局删除函数
+
+/**
+ * @brief   全局删除函数
+ * @param rhs
+ */
+void deletor_function_global_2(Unique_test* rhs) {
+    std::cout << "deletor_function_global_2" << std::endl;
+}
+
+void test_deletor_unique_ptr_global_function() {
+    std::unique_ptr<Unique_test, std::function<void(Unique_test*)>> sp(new Unique_test, deletor_function_global_2);
+    sp->echo();
+
+    std::unique_ptr<Unique_test> sp2(new Unique_test);
 }
 
 
-void PassUniquePtr(const std::unique_ptr<USP>& rhs) {
-    if (rhs) {
-        rhs->echo();
+class Uess {
+public:
+    static void deletor_class_static(SourcePool* ptr) {
+        std::cout << "deletor_class_static" << std::endl;
     }
-    else {
-        std::cout << "const" << std::endl;
+
+    void deletor_class(SourcePool* ptr) {
+        std::cout << "use Uess deletor_class" << std::endl;
     }
-    // rhs.reset();
+};
+
+void test_deletor_unique_ptr_class_static_function() {
+    std::unique_ptr<SourcePool, std::function<void(SourcePool*)>> sp(new SourcePool, Uess::deletor_class_static);
 }
 
+void test_deletor_unique_ptr_class_function() {
+    Uess                                                          uess;
+    auto                                                          deletor_fun2 = std::bind(&Uess::deletor_class, uess, std::placeholders::_1);
+    std::unique_ptr<SourcePool, std::function<void(SourcePool*)>> sp(new SourcePool, deletor_fun2);
 
-void PassUniquePtr(std::unique_ptr<USP>&& rhs) {
-    if (rhs) {
-        rhs->echo();
-        rhs.reset();
-    }
+    std::unique_ptr<SourcePool, std::function<void(SourcePool*)>> sp2(new SourcePool, std::bind(&Uess::deletor_class, uess, std::placeholders::_1));
 }
-
-// pass by value
-void test(std::unique_ptr<USP> rhs) {
-    rhs->echo();
-}
-
 
 int main() {
-    auto sp = std::make_unique<USP>();
-    PassUniquePtr(std::move(sp));
-    PassUniquePtr(sp);
-    if (sp) {
-        std::cout << "yes" << std::endl;
-    }
-    else {
-        std::cout << "no" << std::endl;
-    }
-    auto sp2 = std::make_unique<USP>();
-
-    test(std::move(sp2));
-    if (sp2) {
-        std::cout << "sp2 yes" << std::endl;
-    }
-    else {
-        std::cout << "sp2 no" << std::endl;
-    }
+    test_deletor_unique_ptr_class_function();
     return 0;
 }

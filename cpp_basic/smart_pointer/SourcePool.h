@@ -36,7 +36,7 @@ public:
     }
 
     void echo() {
-        std::cout << "pool_size = " << _pool_size << std::endl;
+        std::cout << "SourcePool pool_size = " << _pool_size << std::endl;
     }
 
 private:
