@@ -1,5 +1,6 @@
 #include <future>
 #include <iostream>
+#include "ThreadPool.h"
 
 
 void test_lambda() {
@@ -14,6 +15,6 @@ void test_lambda() {
 
 
 int main() {
-    test_lambda();
+
     return 0;
 }

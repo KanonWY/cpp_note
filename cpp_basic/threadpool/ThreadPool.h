@@ -14,16 +14,21 @@
 namespace kanon {
 
 class ThreadPool {
-  public:
+public:
     ThreadPool(size_t);
 
-    template <class F, class... Args>
+    ThreadPool(const ThreadPool& rhs)            = delete;
+    ThreadPool& operator=(const ThreadPool& rhs) = delete;
+    ThreadPool(ThreadPool&& rhs)                 = delete;
+    ThreadPool& operator=(ThreadPool&& rhs)      = delete;
+
+    template<class F, class... Args>
     auto enqueue(F&& f, Args&&... args)
-        -> std::future<typename std::result_of<F(Args...)>::type>;
+    -> std::future<typename std::result_of<F(Args...)>::type>;
 
     ~ThreadPool();
 
-  private:
+private:
     std::vector<std::thread>          workers;
     std::queue<std::function<void()>> tasks;
 
@@ -32,8 +37,8 @@ class ThreadPool {
     bool                    stop;
 };
 
-inline ThreadPool::ThreadPool(size_t threads) : stop(false)
-{
+inline ThreadPool::ThreadPool(size_t threads):
+    stop(false) {
     for (size_t i = 0; i < threads; ++i) {
         workers.emplace_back([this] {
             for (;;) {
@@ -55,13 +60,12 @@ inline ThreadPool::ThreadPool(size_t threads) : stop(false)
     }
 }
 
-template <class F, class... Args>
+template<class F, class... Args>
 auto ThreadPool::enqueue(F&& f, Args&&... args)
-    -> std::future<typename std::result_of<F(Args...)>::type>
-{
+-> std::future<typename std::result_of<F(Args...)>::type> {
     using return_type = typename std::result_of<F(Args...)>::type;
     auto task         = std::make_shared<std::packaged_task<return_type()>>(
-        std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+    std::bind(std::forward<F>(f), std::forward<Args>(args)...));
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
@@ -74,17 +78,16 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
     return res;
 }
 
-inline ThreadPool::~ThreadPool()
-{
+inline ThreadPool::~ThreadPool() {
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
         stop = true;
     }
     condition.notify_all();
-    for (auto& it : workers) {
+    for (auto& it: workers) {
         it.join();
     }
 }
-};  // namespace kanon
+}; // namespace kanon
 
 #endif

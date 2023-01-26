@@ -1,0 +1,2 @@
+add_executable(testThreadPool test_packaged_task.cpp)
+target_link_libraries(testThreadPool pthread)
