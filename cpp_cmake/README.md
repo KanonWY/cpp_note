@@ -1,6 +1,8 @@
 ## CMake Cookbook阅读笔记
 
 ### 1、选择编译器
+[how-do-i-use-a-different-compiler](https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#how-do-i-use-a-different-compiler)  
+注意`set(CMAKE_CXX_COMPILER "xxx)`需要写在`project`就可以生效了。
 ```bash
 #1、在CLI中使用
 cmake -DCMKAE_CXX_COMPILER=clang++
