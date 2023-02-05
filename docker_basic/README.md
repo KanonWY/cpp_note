@@ -1,6 +1,14 @@
 ## Docker基础
 ### 1.dds_dockerfile
+该镜像为`fast-dds`的开发环境镜像，用于测试DSS和研究DDS源码用。
 ### 2.ubuntu_ssh_dockerfile 
+该镜像为Ubuntu20的开发环境镜像，用于基本开发，开箱即用。
+### 3、build env
+`build_env`是一个基于Centos7.9.2009的镜像构建文件，该镜像是为了快速构建内网C++开发环境，也是CI/CD中的项目构建镜像基础，该镜像中内置了以下基本内容：  
+- llvm15套件
+- oh-my-zsh
+- vim8.2以及常见插件（包括YCM等自动补全插件）
+- cmake、ninja等CPP构建套件
 
 ### Windows上Docker相关
 （1）在windows10上不使用WSL的Docker性能比较低，如果不使用WSL的情况下，在构建容器的时候进行消耗CPU的操作（比如在一个镜像中源码构建llvm），会导致镜像构建时间过长。  
