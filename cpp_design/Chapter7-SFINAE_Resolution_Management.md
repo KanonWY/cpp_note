@@ -98,6 +98,39 @@ f(5l);      // 2
 Type deduction can be  ambiguous when different concrete type can be deduced from different arguments. if this happens, it means we have failed 
 to deduce the argument types and cannot use this template function. Type substitution is never ambiguous-once we know what T is, we simply substitution
 that type   every time we see T in the function definition. This process can also fail, but in a different way.
+#### Substitution failure
+Once we have deduced the template parameter types, type substitution is a pureluy mechanical process. But Not all types are created equal, and some allow
+more liberties than others. Consider below code:
+```cpp
+template<typename T>
+void f(T i, typename T::t& j) {  
+}
+
+template<typename T>
+void f(T i, T j) {
+}
+
+struct A
+{
+    struct t {int i;};
+    t i;
+};
+
+A a{5};
+f(a,a.i);   //T A
+f(5, 7);    /T int
+```
+#### Substitution Failure Is Not An Error
+The rule that a substitution failure arising from an expression that would be invaild with the specified or deduced types does not make the whole program
+invalid is known as SFINAE.This rule is essential for using template functions in C++; without SFINAE, it would be impossible to write many otherwise 
+perfectly valid programs.
+#### Taking control of overload resolution
+The rule that a failure of the template argument substitution is not an error—the SFINAE rule—had to be added to the language simply to make certain narrowly defined template functions possible. But the ingenuity of a C++ programmer knows no bounds, and so SFINAE was repurposed and exploited to manually control the overload set by intentionally causing substitution failures.  
+Let's consider in detail how SFINAE can be used to knock out an undesirable overload from the overload set.
+##### basic SFINAE
+consider such question: we have some general code that we want to call for all object, except for built-in types.normal solution is that for built-in types we have special code.But we can use SFINAE to simpler to somehow test whether our type is a class or not.
+
+
 
 
 
