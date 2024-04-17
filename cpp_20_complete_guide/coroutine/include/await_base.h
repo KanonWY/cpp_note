@@ -3,6 +3,10 @@
 #include <iostream>
 
 namespace eon {
+
+/**
+ * @brief awaiter 结构体
+ */
 class Awaiter {
 public:
     bool await_ready() const noexcept {

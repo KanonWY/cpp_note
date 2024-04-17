@@ -34,3 +34,7 @@ DEFINE_EXE(concept_requires_no_temp_function)
 DEFINE_EXE(concept_requires_class_temp)
 
 DEFINE_EXE(concept_requires_var_temp)
+
+DEFINE_EXE(match_test)
+
+DEFINE_EXE(coro_test)

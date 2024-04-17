@@ -43,3 +43,7 @@ DEFINE_EXE(coro_trait)
 DEFINE_EXE(coro_pool)
 
 DEFINE_EXE(coro_pool2)
+
+DEFINE_EXE(coro_concept)
+
+DEFINE_EXE(call_coro)
