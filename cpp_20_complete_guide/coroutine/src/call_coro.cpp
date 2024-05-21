@@ -21,3 +21,15 @@ public:
     }
 };
 
+namespace eon {
+    struct Task{
+
+        private:
+    };
+};
+
+
+int main()
+{
+    return 0;
+}
