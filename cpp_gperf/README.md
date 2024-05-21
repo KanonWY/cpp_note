@@ -151,19 +151,128 @@ git clone https://github.com/brendangregg/FlameGraph.git
 #将这些脚本export到PATH中。
 ```
 #### 7.2 记录指定进程的数据信息
+
+使用 perf record 记录某一个进程的数据采样信息
+
 ```bash
-# perf record -a -g -F99 -p 进程ID sleep 20
+# perf record -g --call-graph dwarf -F99 -p 进程ID -o 输出文件名
 Warning:
 PID/TID switch overriding SYSTEM
 参数说明：
--a         all cpus
--F99       采样频率99HZ
--g         统计调用栈
--p         指定进程ID
-sleep      统计时间，单位秒
+-a         		all cpus
+-F99       		采样频率 99HZ
+-g         		统计调用栈
+-p         		指定进程ID
+-o            输出文件的名称
+--call-graph  dwarf 追踪链的格式 dward | fp(default)
 ```
+#### perf stat
+
+收集某一个进程的性能计数器信息
+
+```bash
+perf stat -p 326689
+
+ Performance counter stats for process id '326689':
+
+             50.11 msec task-clock                #    0.009 CPUs utilized
+             1,132      context-switches          #   22.589 K/sec
+               366      cpu-migrations            #    7.304 K/sec
+                 0      page-faults               #    0.000 /sec
+        52,774,050      cycles                    #    1.053 GHz
+        14,508,135      instructions              #    0.27  insn per cycle
+         3,069,012      branches                  #   61.243 M/sec
+           284,633      branch-misses             #    9.27% of all branches
+       214,713,190      slots                     #    4.285 G/sec
+         8,785,139      topdown-retiring          #      4.0% retiring
+        67,075,408      topdown-bad-spec          #     30.5% bad speculation
+       129,425,654      topdown-fe-bound          #     58.9% frontend bound
+        14,460,471      topdown-be-bound          #      6.6% backend bound
+
+       5.373774924 seconds time elapsed
+```
+
+
+
+- `task-clock`：进程的总运行时间，以毫秒为单位。
+- `context-switches`：上下文切换的次数，表示进程在调度器中被切换的次数。
+- `cpu-migrations`：CPU 迁移的次数，表示进程在不同 CPU 核之间迁移的次数。
+- `page-faults`: 页错误指标
+- `cycles`：CPU 执行的时钟周期数。
+- `instructions`：执行的指令数。
+- `branches`：分支指令的数量。
+- `branch-misses`：分支预测失败的次数，表示分支预测错误的次数。
+- `slots`：总的微操作数，表示 CPU 中执行的微操作的数量。
+- `topdown-retiring`：顶层向下模型中的“retiring”事件，表示因顶层模型限制而未执行的指令数。
+- `topdown-bad-spec`：顶层向下模型中的“bad speculation”事件，表示因顶层模型限制而导致的错误预测的指令数。
+- `topdown-fe-bound`：顶层向下模型中的“frontend bound”事件，表示因前端限制而未执行的指令数。
+- `topdown-be-bound`：顶层向下模型中的“backend bound”事件，表示因后端限制而未执行的指令数。
+
+##### page-faults
+
+`page-faults` 是 `perf stat` 输出中的一个指标，表示进程在执行过程中发生的页面错误（Page Faults）的次数。页面错误是指当进程访问的内存页面不在物理内存中时发生的情况，需要将相应的页面从磁盘加载到内存中，或者从其他进程共享的内存区域复制到当前进程的内存中。
+
+页面错误通常分为两种类型：
+
+1. **缺页中断（Page Fault）**：当进程访问的页面不在物理内存中时，会触发缺页中断，操作系统会将相应的页面从磁盘加载到内存中。这种情况通常发生在第一次访问某个内存页面时，或者当操作系统决定将某个页面置换出物理内存时。
+2. **写时复制（Copy-on-Write）**：当多个进程共享同一块内存时，如果其中一个进程尝试写入该内存，操作系统会触发写时复制机制，将该内存页面复制一份，并将写入操作应用到新复制的页面上，以保护其他进程不受影响。
+
+#### topdown 分析
+
+##### 1、topdown-retiring
+
+`topdown-retiring` 是 `perf stat` 输出中的一个指标，它是顶层向下（Top-down）性能分析模型中的一个事件，用于衡量 CPU 执行指令的效率。
+
+在顶层向下的性能分析模型中，CPU 的性能瓶颈被分为三个部分：前端（Frontend）、后端（Backend）和退休（Retiring）。其中，`topdown-retiring` 表示 CPU 中由于顶层性能模型的限制而未执行的指令数量。
+
+具体来说，`topdown-retiring` 指标反映了由于顶层性能模型的限制（比如分支预测、缓存访问延迟等）而未能执行的指令数量。在顶层向下的性能分析模型中，`topdown-retiring` 事件的数量越多，表示 CPU 中由于性能瓶颈而未执行的指令越多，可能意味着存在性能瓶颈。
+
+具体来说，`topdown-retiring` 事件可能反映以下一些潜在的性能瓶颈：
+
+1. **分支预测失败（Branch Prediction Misses）**：分支预测是 CPU 中常见的一种技术，用于预测程序中的分支指令的执行路径。当分支预测失败时，CPU 需要重新计算分支目标地址，导致指令未能按预期执行，从而增加了 `topdown-retiring` 事件的数量。
+2. **缓存访问延迟（Cache Access Latency）**：缓存是 CPU 中用于加速内存访问的重要组成部分。当 CPU 访问缓存中未命中的数据时，需要从主存中加载数据，这会导致额外的延迟，从而增加了 `topdown-retiring` 事件的数量。
+3. **内存访问延迟（Memory Access Latency）**：当 CPU 访问主存时，由于内存层级结构和总线带宽等因素，可能会产生额外的访问延迟，从而影响指令的执行速度，增加 `topdown-retiring` 事件的数量。
+4. **其他微架构限制（Microarchitectural Limitations）**：CPU 的微架构设计中可能存在其他一些限制，比如指令调度、乱序执行、执行单元资源竞争等，都有可能导致 `topdown-retiring` 事件的增加。
+
+##### 2、topdown-bad-spec
+
+`topdown-bad-spec` 指标反映了由于 CPU 预测错误而导致的指令未能按预期执行的次数。这些错误的预测可能涉及到分支预测、数据依赖预测、指令级别的并行执行等方面。
+
+##### 3、topdown-fe-bound
+
+`topdown-fe-bound` 是 `perf stat` 输出中的另一个指标，它是顶层向下（Top-down）性能分析模型中的一个事件，用于衡量 CPU 中由于前端（Frontend）限制而未执行的指令数量。
+
+`topdown-fe-bound` 事件反映了由于 CPU 前端性能限制而导致的指令未能按预期执行的次数。这些限制可能包括分支预测失败、指令缓存未命中、解码器繁忙等
+
+##### 4、topdown-be-bound
+
+`topdown-be-bound` 是 `perf stat` 输出中的另一个指标，它是顶层向下（Top-down）性能分析模型中的一个事件，用于衡量 CPU 中由于后端（Backend）限制而未执行的指令数量。
+
+CPU 的后端主要负责指令的执行、数据处理和结果写回，它包括执行单元、乱序引擎、寄存器文件等部件。`topdown-be-bound` 事件反映了由于 CPU 后端性能限制而导致的指令未能按预期执行的次数。这些限制可能包括执行单元资源竞争、寄存器文件写回延迟等。
+
+### perf top
+
+查看系用性能采集和指定进程的性能采集
+
+```bash
+perf top -p pid
+```
+
+如何只想看用户空间函数和只想看内核空间函数
+
+```bash
+-U
+-K
+仅查看用户空间函数
+perf top -p pid -K
+仅查看内核空间函数
+perf top -p pid -U
+```
+
 #### 7.3 perf report分析数据
+
 `perf report`简单分析数据
+
 ```bash
 perf report -i perf.data
 Samples: 1K of event 'cpu-clock:pppH', Event count (approx.): 12323232200
