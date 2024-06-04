@@ -1,0 +1,2 @@
+## auto as template parameters
+

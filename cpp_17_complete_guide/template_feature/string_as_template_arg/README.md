@@ -1,0 +1,2 @@
+## string as template argument
+
