@@ -5,7 +5,6 @@
 
 // std::variant
 
-
 // 定义一个未初始化的 variant 的行为是什么？
 // 使用第一个类型的默认构造函数和默认值
 
@@ -30,45 +29,26 @@ void TEST_define_uninit_variant()
 
 struct A
 {
-    A()
-    {
-        std::cout << "A()" << std::endl;
-    }
+    A() { std::cout << "A()" << std::endl; }
 
-    ~A()
-    {
-        std::cout << "~A()" << std::endl;
-    }
+    ~A() { std::cout << "~A()" << std::endl; }
 };
 
 struct B
 {
-    B()
-    {
-        std::cout << "B()" << std::endl;
-    }
+    B() { std::cout << "B()" << std::endl; }
 
-    ~B()
-    {
-        std::cout << "~B()" << std::endl;
-    }
+    ~B() { std::cout << "~B()" << std::endl; }
 };
 
 struct C
 {
     C() = delete;
 
-    C(int a)
-    {
-        std::cout << "C(int a)" << std::endl;
-    }
+    C(int a) { std::cout << "C(int a)" << std::endl; }
 
-    ~C()
-    {
-        std::cout << "~C()" << std::endl;
-    }
+    ~C() { std::cout << "~C()" << std::endl; }
 };
-
 
 /**
  * 如果 element 没有默认构造函数会如何？
@@ -122,14 +102,13 @@ class Derived : public std::variant<int, std::string>
  */
 void TEST_variant_dervived()
 {
-    Derived d{ "hellowero" };
+    Derived d{"hellowero"};
     std::cout << d.index() << std::endl;
     std::cout << std::get<1>(d) << std::endl;
     std::cout << std::get<std::string>(d) << std::endl;
     d.emplace<0>(100);
     std::cout << std::get<0>(d) << std::endl;
 }
-
 
 int main()
 {
